@@ -1,0 +1,42 @@
+### Java binaries ###
+*.class
+*.log
+
+### IntelliJ IDEA ###
+.idea/
+*.iml
+out/
+build/
+
+### CUP/JFlex generated files ###
+src/main/java/java/predictatu/parser.java
+src/main/java/java/predictatu/sym.java
+
+### External tools (do not track) ###
+tools/
+
+### Jars - NOT auto-generated but optional to track ###
+# lib/*.jar
+
+### OS & Editor ###
+.DS_Store
+.vscode/
+
+### Eclipse ###
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+.sts4-cache
+bin/
+!**/src/main/**/bin/
+!**/src/test/**/bin/
+
+### NetBeans ###
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
