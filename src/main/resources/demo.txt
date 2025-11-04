@@ -1,12 +1,13 @@
 Campeonato "Mundial 2026"
-
 SERIE "Grupo A"
-Equipos: [Argentina, Uruguay, Alemania, Japón]
-
-Partido Nro: 1
+EQUIPOS: [Argentina, Uruguay, Alemania, Japón]
+PARTIDO NRO: 1
 2026/06/15 - "Estadio Monumental"
-Argentina 3 - Qatar 2
-
-Participante: "Pepe Repepe" - pepe@mail.com
-Pronósticos:
-1: Argentina 3 - Qatar 2
+Argentina 3 - Uruguay 2
+PARTIDO NRO: 2
+2026/06/16 - "Estadio Centenario"
+Alemania 1 - Japón 0
+PARTICIPANTE: Pepe Repepe - pepe@mail.com
+PRONOSTICOS PARTIDOS:
+1: Argentina 2 - Uruguay 1
+2: (X) Alemania 0 - Japón 0

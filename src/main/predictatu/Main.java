@@ -1,4 +1,4 @@
-package predictatu;
+package main.predictatu;
 
 import java.io.FileReader;
 

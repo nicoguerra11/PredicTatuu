@@ -29,7 +29,7 @@ parser code {:
 
 /* ====== Terminales ====== */
 terminal CAMPEONATO, SERIE, EQUIPOS, PARTIDO, NRO, PARTICIPANTE, PRONOSTICOS, PARTIDOS;
-terminal LBRACK, RBRACK, COLON, COMMA, DASH, NEWLINE, X, SEMI;
+terminal LBRACK, RBRACK, COLON, COMMA, DASH, NEWLINE, X;
 
 terminal Integer NUMBER;
 terminal String  IDENT, QSTRING, EMAIL, DATE;
@@ -39,29 +39,28 @@ non terminal archivo, bloques, bloque, enc_camp;
 non terminal serie, cuatro_equipos;
 non terminal partido_linea;
 non terminal participante, encabezado_participante, pronos, lista_pronos, linea_prono;
-non terminal opt_x, opt_partidos;
+non terminal opt_x, opt_partidos, opt_newlines;
 non terminal String equipo, nombre;
-
-/* ====== Precedencia para resolver conflictos ====== */
-precedence left NEWLINE;
 
 /* ====== Inicio ====== */
 start with archivo;
 
 /* ====== Reglas ====== */
-archivo ::= enc_camp bloques
+archivo ::= enc_camp opt_newlines bloques
           ;
 
 enc_camp ::= CAMPEONATO nombre:n NEWLINE
            {: System.out.println("CAMPEONATO: " + n); :}
            ;
 
-/* La repetición de ítems la maneja 'bloques' */
-bloques  ::= bloques bloque
+opt_newlines ::= opt_newlines NEWLINE
+               | /* vacío */
+               ;
+
+bloques  ::= bloques opt_newlines bloque
            | bloque
            ;
 
-/* Cada bloque arranca con un token distinto → sin ambigüedad */
 bloque   ::= serie
            | partido_linea
            | participante
@@ -70,9 +69,6 @@ bloque   ::= serie
 /* ---------- SERIE + 4 equipos ---------- */
 serie    ::= SERIE nombre:nom NEWLINE
              EQUIPOS COLON LBRACK cuatro_equipos:list RBRACK NEWLINE
-           {: System.out.println("SERIE " + nom + " -> " + list); :}
-           | SERIE nombre:nom NEWLINE
-             EQUIPOS COLON LBRACK cuatro_equipos:list RBRACK NEWLINE NEWLINE
            {: System.out.println("SERIE " + nom + " -> " + list); :}
            ;
 
@@ -84,21 +80,16 @@ equipo   ::= IDENT:i   {: RESULT = i; :}
            | QSTRING:q {: RESULT = q; :}
            ;
 
-/* ---------- Una línea de fixture (partido) ---------- */
+/* ---------- Partido ---------- */
 partido_linea ::=
           PARTIDO NRO COLON NUMBER:nro NEWLINE
           DATE:fecha DASH QSTRING:estadio NEWLINE
           equipo:e1 NUMBER:g1 DASH equipo:e2 NUMBER:g2 NEWLINE
           {: System.out.println("PARTIDO #" + nro + " @ " + estadio + " -> "
                + e1 + " " + g1 + " - " + e2 + " " + g2); :}
-          | PARTIDO NRO COLON NUMBER:nro NEWLINE
-          DATE:fecha DASH QSTRING:estadio NEWLINE
-          equipo:e1 NUMBER:g1 DASH equipo:e2 NUMBER:g2 NEWLINE NEWLINE
-          {: System.out.println("PARTIDO #" + nro + " @ " + estadio + " -> "
-               + e1 + " " + g1 + " - " + e2 + " " + g2); :}
           ;
 
-/* ---------- Participante + pronósticos ---------- */
+/* ---------- Participante ---------- */
 participante ::= encabezado_participante pronos
                {:
                   parser.assertMaxX();
@@ -113,7 +104,6 @@ encabezado_participante ::= PARTICIPANTE nombre:nom DASH EMAIL:mail NEWLINE
                :}
                ;
 
-/* acepta "PRONOSTICOS:" o "PRONOSTICOS PARTIDOS:" */
 pronos   ::= PRONOSTICOS opt_partidos COLON NEWLINE lista_pronos
            ;
 
@@ -134,7 +124,6 @@ linea_prono ::=
            :}
            ;
 
-/* --------- Helpers --------- */
 opt_x   ::= X        {: parser.incrementX(); :}
          |           {: parser.hadX = false; :}
          ;
