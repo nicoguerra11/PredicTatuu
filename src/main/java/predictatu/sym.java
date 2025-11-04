@@ -10,23 +10,24 @@ public class sym {
   /* terminals */
   public static final int RBRACK = 11;
   public static final int EQUIPOS = 4;
-  public static final int IDENT = 18;
+  public static final int IDENT = 19;
   public static final int X = 16;
-  public static final int DATE = 21;
-  public static final int EMAIL = 20;
+  public static final int SEMI = 17;
+  public static final int DATE = 22;
+  public static final int EMAIL = 21;
   public static final int SERIE = 3;
   public static final int LBRACK = 10;
   public static final int NRO = 6;
   public static final int COLON = 12;
   public static final int CAMPEONATO = 2;
   public static final int COMMA = 13;
-  public static final int NUMBER = 17;
+  public static final int NUMBER = 18;
   public static final int EOF = 0;
   public static final int PARTIDO = 5;
   public static final int PARTIDOS = 9;
   public static final int NEWLINE = 15;
   public static final int error = 1;
-  public static final int QSTRING = 19;
+  public static final int QSTRING = 20;
   public static final int DASH = 14;
   public static final int PARTICIPANTE = 7;
   public static final int PRONOSTICOS = 8;
@@ -48,6 +49,7 @@ public class sym {
   "DASH",
   "NEWLINE",
   "X",
+  "SEMI",
   "NUMBER",
   "IDENT",
   "QSTRING",

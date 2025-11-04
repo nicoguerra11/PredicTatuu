@@ -9,35 +9,50 @@ parser code {:
   public void report_error(String msg, Object info) {
     System.err.println("ERROR: " + msg);
   }
+
   private void assertMaxX() {
     if (xCount > 4) {
       throw new RuntimeException("Un participante no puede marcar más de 4 (X). Encontradas: " + xCount);
     }
   }
+
+  private void resetXCount() {
+    xCount = 0;
+    hadX = false;
+  }
+
+  private void incrementX() {
+    xCount++;
+    hadX = true;
+  }
 :};
 
 /* ====== Terminales ====== */
 terminal CAMPEONATO, SERIE, EQUIPOS, PARTIDO, NRO, PARTICIPANTE, PRONOSTICOS, PARTIDOS;
-terminal LBRACK, RBRACK, COLON, COMMA, DASH, NEWLINE, X;
+terminal LBRACK, RBRACK, COLON, COMMA, DASH, NEWLINE, X, SEMI;
 
 terminal Integer NUMBER;
 terminal String  IDENT, QSTRING, EMAIL, DATE;
 
 /* ====== No terminales ====== */
 non terminal archivo, bloques, bloque, enc_camp;
-non terminal serie, cuatro_equipos, equipo;
+non terminal serie, cuatro_equipos;
 non terminal partido_linea;
 non terminal participante, encabezado_participante, pronos, lista_pronos, linea_prono;
-non terminal opt_nl, opt_x, opt_partidos;
-non terminal String nombre;
+non terminal opt_x, opt_partidos;
+non terminal String equipo, nombre;
+
+/* ====== Precedencia para resolver conflictos ====== */
+precedence left NEWLINE;
 
 /* ====== Inicio ====== */
 start with archivo;
 
 /* ====== Reglas ====== */
-archivo ::= enc_camp bloques ;
+archivo ::= enc_camp bloques
+          ;
 
-enc_camp ::= CAMPEONATO nombre:n
+enc_camp ::= CAMPEONATO nombre:n NEWLINE
            {: System.out.println("CAMPEONATO: " + n); :}
            ;
 
@@ -53,8 +68,11 @@ bloque   ::= serie
            ;
 
 /* ---------- SERIE + 4 equipos ---------- */
-serie    ::= SERIE nombre:nom opt_nl
-             EQUIPOS COLON LBRACK cuatro_equipos:list RBRACK opt_nl
+serie    ::= SERIE nombre:nom NEWLINE
+             EQUIPOS COLON LBRACK cuatro_equipos:list RBRACK NEWLINE
+           {: System.out.println("SERIE " + nom + " -> " + list); :}
+           | SERIE nombre:nom NEWLINE
+             EQUIPOS COLON LBRACK cuatro_equipos:list RBRACK NEWLINE NEWLINE
            {: System.out.println("SERIE " + nom + " -> " + list); :}
            ;
 
@@ -62,55 +80,65 @@ cuatro_equipos ::= equipo:e1 COMMA equipo:e2 COMMA equipo:e3 COMMA equipo:e4
                  {: RESULT = e1 + ", " + e2 + ", " + e3 + ", " + e4; :}
                  ;
 
-equipo   ::= IDENT   {: RESULT = IDENT$1; :}
-           | QSTRING {: RESULT = QSTRING$1; :}
+equipo   ::= IDENT:i   {: RESULT = i; :}
+           | QSTRING:q {: RESULT = q; :}
            ;
 
 /* ---------- Una línea de fixture (partido) ---------- */
 partido_linea ::=
-          PARTIDO NRO COLON NUMBER NEWLINE
-          DATE DASH QSTRING NEWLINE
-          equipo:e1 NUMBER:g1 DASH equipo:e2 NUMBER:g2 opt_nl
-          {: System.out.println("PARTIDO #" + NUMBER$4 + " @ " + QSTRING$8 + " -> "
+          PARTIDO NRO COLON NUMBER:nro NEWLINE
+          DATE:fecha DASH QSTRING:estadio NEWLINE
+          equipo:e1 NUMBER:g1 DASH equipo:e2 NUMBER:g2 NEWLINE
+          {: System.out.println("PARTIDO #" + nro + " @ " + estadio + " -> "
+               + e1 + " " + g1 + " - " + e2 + " " + g2); :}
+          | PARTIDO NRO COLON NUMBER:nro NEWLINE
+          DATE:fecha DASH QSTRING:estadio NEWLINE
+          equipo:e1 NUMBER:g1 DASH equipo:e2 NUMBER:g2 NEWLINE NEWLINE
+          {: System.out.println("PARTIDO #" + nro + " @ " + estadio + " -> "
                + e1 + " " + g1 + " - " + e2 + " " + g2); :}
           ;
 
 /* ---------- Participante + pronósticos ---------- */
-participante ::= encabezado_participante opt_nl pronos
-               {: assertMaxX(); xCount = 0; :}
+participante ::= encabezado_participante pronos
+               {:
+                  parser.assertMaxX();
+                  parser.resetXCount();
+               :}
                ;
 
-encabezado_participante ::= PARTICIPANTE nombre:nom DASH EMAIL:mail
-               {: System.out.println("PARTICIPANTE: " + nom + " <" + mail + ">"); :}
+encabezado_participante ::= PARTICIPANTE nombre:nom DASH EMAIL:mail NEWLINE
+               {:
+                  System.out.println("PARTICIPANTE: " + nom + " <" + mail + ">");
+                  parser.resetXCount();
+               :}
                ;
 
 /* acepta "PRONOSTICOS:" o "PRONOSTICOS PARTIDOS:" */
-pronos   ::= PRONOSTICOS opt_partidos COLON opt_nl lista_pronos ;
+pronos   ::= PRONOSTICOS opt_partidos COLON NEWLINE lista_pronos
+           ;
 
 opt_partidos ::= PARTIDOS
-               | /* vacío */ ;
+               | /* vacío */
+               ;
 
 lista_pronos ::= lista_pronos linea_prono
                | linea_prono
                ;
 
 linea_prono ::=
-           NUMBER COLON
-           opt_x
-           equipo:e1 NUMBER:g1 DASH equipo:e2 NUMBER:g2 opt_nl
-           {: System.out.println("PRONO " + NUMBER$1 + ": " + e1 + " " + g1 + " - " + e2 + " " + g2
-                + (hadX ? " (X)" : "")); :}
+           NUMBER:nro COLON opt_x equipo:e1 NUMBER:g1 DASH equipo:e2 NUMBER:g2 NEWLINE
+           {:
+              System.out.println("PRONO " + nro + ": " + e1 + " " + g1 + " - " + e2 + " " + g2
+                + (parser.hadX ? " (X)" : ""));
+              parser.hadX = false;
+           :}
            ;
 
 /* --------- Helpers --------- */
-opt_x   ::= X        {: hadX = true;  xCount++; :}
-         |           {: hadX = false;              :}
+opt_x   ::= X        {: parser.incrementX(); :}
+         |           {: parser.hadX = false; :}
          ;
 
-opt_nl  ::= NEWLINE
-         | /* vacío */
-         ;
-
-nombre  ::= IDENT   {: RESULT = IDENT$1; :}
-          | QSTRING {: RESULT = QSTRING$1; :}
+nombre  ::= IDENT:i   {: RESULT = i; :}
+          | QSTRING:q {: RESULT = q; :}
           ;

@@ -9,7 +9,4 @@ Argentina 3 - Qatar 2
 
 Participante: "Pepe Repepe" - pepe@mail.com
 Pronósticos:
-1: Japón 1 - Qatar 2
-2:(X) Uruguay 1 - Alemania 2
-3: Argentina 2 - Qatar 1
-4:(X) Alemania 1 - Uruguay 0
+1: Argentina 3 - Qatar 2
